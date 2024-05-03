@@ -30,13 +30,6 @@ const product3 = {
   "image": "./images/strawberry.jpg"
 };
 
-const testProduct = {
-  "name": "Pineapples",
-  "price": 1.50,
-  "quantity": 0,
-  "productId": 6,
-  "image": "../images/strawberry.jpg"
-};
 products.push(product1);
 products.push(product2);
 products.push(product3);
@@ -54,13 +47,19 @@ const cart = [];
   - addProductToCart should then increase the product's quantity
   - if the product is not already in the cart, add it to the cart
 */
+
+// Helper function - Get product by id
+function getProductById(productId, productLocation) {
+  return productLocation.find(p => p.productId === productId);
+};
+
 const addProductToCart = (productId) => {
   // Find product
-  const product = products.find(p=> p.productId === productId);
+  const product = getProductById(productId, products);
   if(!product) return false;
   
   // Product in cart
-  const cartItem = cart.find(item => item.productId == productId);
+  const cartItem = getProductById(productId, cart);
   !cartItem ? (product.quantity++,cart.push(product)) :     ++product.quantity;
   return true;
 };
@@ -70,9 +69,9 @@ const addProductToCart = (productId) => {
 */
 const increaseQuantity = (productId) => {
   // Find product
-  const product = products.find(p=> p.productId === productId);
+  const product = getProductById(productId, products);
   // Product not found - Increase quantity
-  !product ? false : (product.quantity++, true);
+  if(product) return product.quantity++;
 };
 /* Create a function named decreaseQuantity that takes in the productId as an argument
   - decreaseQuantity should get the correct product based on the productId
@@ -81,7 +80,7 @@ const increaseQuantity = (productId) => {
 */
 const decreaseQuantity = (productId) => {
   // Find product
-  const product = products.find(p=> p.productId === productId);
+  const product = getProductById(productId, products);
   if(!product) return false; // Product not found
 
   // Decrease quantity
@@ -98,11 +97,11 @@ const decreaseQuantity = (productId) => {
   - removeProductFromCart should remove the product from the cart
 */const removeProductFromCart = (productId) => {
   // Find product
-  const product = products.find(p=> p.productId === productId);
+  const product = getProductById(productId, products);
   if(!product) return false; // Product not found
 
   // Product in cart
-  const cartItem = cart.find(item => item.productId == productId);
+  const cartItem = getProductById(productId, cart);
 
   if(cartItem) return (product.quantity = 0, cart.splice(cart.findIndex(item => item.productId === productId), 1));
 };
@@ -118,8 +117,7 @@ const cartTotal = () => {
   // Iterate through cart
   cart.forEach(cartItem => {
     let productTotal = cartItem.quantity * cartItem.price;
-    sum += productTotal
-    console.log(cartItem.name, cartItem.price, cartItem.quantity, productTotal, sum)
+    sum += productTotal;
   })
   return sum
 };
@@ -133,10 +131,22 @@ const emptyCart = () => {
   - pay will return a positive number if money should be returned to customer
   Hint: cartTotal function gives us cost of all the products in the cart  
 */
+
+// Track total amount paid
+let totalPaid = 0;
 const pay = (amount) => {
-  // Calculate the total cost of the items
-  console.log(amount-cartTotal())
-  return amount - cartTotal();
+  // Add current amount paid to totalPaid variable
+  totalPaid += amount;
+
+  // Calculate remaining balance
+  let remainingBalance = totalPaid - cartTotal();
+  
+  // Check if remainingBalance is greater than zero
+  if(remainingBalance>=0) {
+    totalPaid = 0;
+    emptyCart();
+  } 
+  return remainingBalance;
 };
 /* Place stand out suggestions here (stand out suggestions can be found at the bottom of the project rubric.)*/
 const currency = (amount, fromCurrency, toCurrency) => {
@@ -150,16 +160,15 @@ const currency = (amount, fromCurrency, toCurrency) => {
 
   // Get rate
   const rate = conversionRates[fromCurrency][toCurrency];
-  console.log(rate)
   if(!rate) return 'Conversion not supported'; // Conversion not supported
 
   // return conversion
   return amount * rate;
 };
-console.log(currency(100, 'USD', 'EUR')); // Convert 100 USD to EUR
-console.log(currency(100, 'EUR', 'USD')); // Convert 100 EUR to USD
-console.log(currency(1000, 'USD', 'JPY')); // Convert 1000 USD to JPY
-console.log(currency(1000, 'JPY', 'USD')); // Convert 1000 JPY to USD
+currency(100, 'USD', 'EUR'); // Convert 100 USD to EUR
+currency(100, 'EUR', 'USD'); // Convert 100 EUR to USD
+currency(1000, 'USD', 'JPY'); // Convert 1000 USD to JPY
+currency(1000, 'JPY', 'USD'); // Convert 1000 JPY to USD
 
 /* The following is for running unit tests. 
    To fully complete this project, it is expected that all tests pass.
